@@ -1,5 +1,15 @@
 # Track 2 B: Own Project
 
+## Kampung Sambau - judge guide
+
+Copy `.env.example` to `.env` here and set `LLM_API_KEY`. Run `make run` here or from the repository root. Open http://localhost:3000 in a WebGL2 browser. Docker Compose v2 and a reachable Apertus endpoint are required. The image packages the app, not model weights.
+
+Configuration uses `LLM_NAME`, `LLM_BASE_URL`, `LLM_API_KEY`. Defaults select CSCS Apertus v1.5 70B. The browser renders the village; the server owns game state and validates model commands. English/German text input is the primary path. Microphone endpoint compatibility remains unverified.
+
+See [submission audit](docs/SUBMISSION.md), [API contract](docs/API.md), [deployment](docs/DEPLOYMENT.md), and [report](technical_report.md). For local development run `npm ci`, `npm run build`, `npm start`. Run `npm test` for tests and `make check` for repository checks. The official challenge requirements are retained below.
+
+---
+
 Bring your own idea and build a working Apertus prototype that tackles a problem you care about — any domain, any use case. The project must be new, started within the hackathon period.
 
 Submissions must use the Apertus model family.

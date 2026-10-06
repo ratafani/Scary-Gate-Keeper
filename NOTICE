@@ -1,0 +1,15 @@
+Kampung Sambau - Of the Dark
+
+Based on the Apache-2.0 HackApertus/project-template; its LICENSE is retained.
+New application code: Apache-2.0.
+Project documentation and report: CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/).
+
+Village, characters, textures, visual design and scenarios originate in the
+owner's pre-existing NeighborhoodWatchVision project. Ownership was stated by
+the owner. These assets and the original game concept are not new hackathon
+output; conversion and the browser implementation are new work.
+
+Complete asset-level licensing/provenance review before public release.
+Retain applicable original attributions. The code license does not implicitly
+relicense non-code assets or dependencies. Non-code releases must follow the
+event's open licensing requirements. Dependencies retain their own licenses.

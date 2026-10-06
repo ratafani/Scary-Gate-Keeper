@@ -1,0 +1,33 @@
+{
+  "source": "NeighborhoodWatchVision / RealityKitContent.rkassets",
+  "characterPose": "Baked frame 1; movement driven by browser",
+  "textures": {
+    "Texture/PosSatpam/Land_Land_TX_BaseColor.1001.png": "ba16718f1d8f.png",
+    "Texture/Gate/Gate_Fence_TX_BaseColor.1001.png": "31e84b4d66a4.png",
+    "Texture/Gate/Gate_Concrete_TX_BaseColor.1001.png": "bfd461ecf63f.png",
+    "Texture/House7/Houses_house7_TX_BaseColor.1001.png": "bd3e421b6d46.png",
+    "Texture/House3/Houses_House3_TX_BaseColor.1001.png": "be3c45bc1450.png",
+    "Texture/House6/Houses_house6_TX_BaseColor.1001.png": "ced004c982f2.png",
+    "Texture/House5/Houses_house5_TX_BaseColor.1001.png": "6c96908836f3.png",
+    "Texture/House2/Houses_House2_TX_BaseColor.1001.png": "bc234ffba741.png",
+    "Texture/House4/Houses_House4_TX_BaseColor.1001.png": "0f864efc7dfe.png",
+    "Texture/House1/Houses_house1_TX_BaseColor.1001.png": "714f7cb9cf05.png",
+    "Texture/Fences/Fences_Fences_TX_BaseColor.1001.png": "b4bc68478000.png",
+    "Texture/PosSatpam/Pos_Satpam_Button_Green_TX_BaseColor.1001.png": "f75cfcf95773.png",
+    "Texture/PosSatpam/Pos_Satpam_Kamling_TX_BaseColor.1001.png": "418ba163669c.png",
+    "Texture/PosSatpam/Pos_Satpam_Button_Red_TX_BaseColor.1001.png": "7f1113bec3f9.png",
+    "Texture/PosSatpam/Pos_Satpam_Table_TX_BaseColor.1001 2.png": "35e3828e72ad.png",
+    "Texture/PosSatpam/Pos_Satpam_bench_TX_BaseColor.1001.png": "eb05b5f5b7f3.png",
+    "Texture/PosSatpam/Lamp.png": "f59a92b96272.png",
+    "Texture/Trees/Background_Tree_Atlas_Diffuse.png": "9a7870099b36.png",
+    "Texture/Trees/Tree_Trunk_01_Diffuse.png": "c772694c94bf.png",
+    "Texture/Characters/3D Fatih_Fati_TX_BaseColor.1001.png": "08833fb26749.png",
+    "Texture/Characters/3D Fatih_Fatih_Fake_TX_BaseColor.1001.png": "520d67788022.png",
+    "Texture/Characters/3D Sandy_Sandy_TX_BaseColor.1001.png": "b36536c00286.png",
+    "Texture/Characters/3D Sandy_Sandy_Fake_TX_BaseColor.1001.png": "ca0321e5eccf.png",
+    "Texture/Characters/3D Handaru_Handaru_TX_BaseColor.1001.png": "afd0d59d19b8.png",
+    "Texture/Characters/3D Handaru_Handaru_Fake_TX_BaseColor.1001.png": "53949f09a983.png",
+    "Texture/Characters/3D Alfa_Alfa_TX_BaseColor.1001.png": "9d16682ae1fd.png",
+    "Texture/Characters/3D Alfa_Alfa_Fake_TX_BaseColor.1001.png": "3bceb32420bd.png"
+  }
+}
