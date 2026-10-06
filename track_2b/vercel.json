@@ -2,7 +2,7 @@
   "rewrites": [],
   "functions": {
     "api/[...path].ts": {
-      "includeFiles": ["data/**"]
+      "includeFiles": "data/**"
     }
   }
 }
