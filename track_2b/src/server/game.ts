@@ -10,12 +10,11 @@ export function parseReply(content:string) {
 }
 type Encounter = typeof village.encounters[number];
 export type Session = {id:string;queue:Encounter[];index:number;score:number;mistakes:number;busy:boolean;history:{role:string;content:string}[];expires:number};
-export const sessions=new Map<string,Session>();
 export function createSession():Session {
   const queue=[...village.encounters];
   for(let i=queue.length-1;i>0;i--){const j=randomInt(i+1);[queue[i],queue[j]]=[queue[j],queue[i]];}
   const s={id:randomUUID(),queue,index:0,score:0,mistakes:0,busy:false,history:[],expires:Date.now()+2*3600_000};
-  sessions.set(s.id,s);return s;
+  return s;
 }
 export function current(s:Session) { return s.queue[s.index]; }
 export function snapshot(s:Session):Shift {

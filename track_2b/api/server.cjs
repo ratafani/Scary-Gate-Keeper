@@ -28447,7 +28447,6 @@ var dialogueSchema = external_exports.object({ speech: external_exports.string()
 function parseReply(content) {
   return dialogueSchema.parse(JSON.parse(content.trim()));
 }
-var sessions = /* @__PURE__ */ new Map();
 function createSession() {
   const queue = [...village_default.encounters];
   for (let i = queue.length - 1; i > 0; i--) {
@@ -28455,7 +28454,6 @@ function createSession() {
     [queue[i], queue[j]] = [queue[j], queue[i]];
   }
   const s = { id: (0, import_node_crypto.randomUUID)(), queue, index: 0, score: 0, mistakes: 0, busy: false, history: [], expires: Date.now() + 2 * 36e5 };
-  sessions.set(s.id, s);
   return s;
 }
 function current(s) {
@@ -28545,6 +28543,61 @@ async function dialogue(messages) {
   }
 }
 
+// src/server/store.ts
+var memory = /* @__PURE__ */ new Map();
+function redisConfig() {
+  const e = process.env;
+  return {
+    url: e.storage_KV_REST_API_URL || e.UPSTASH_REDIS_REST_URL || e.KV_REST_API_URL,
+    token: e.storage_KV_REST_API_TOKEN || e.UPSTASH_REDIS_REST_TOKEN || e.KV_REST_API_TOKEN
+  };
+}
+var command = async (args) => {
+  const { url, token } = redisConfig();
+  if (!url || !token) throw new ServiceError(503, "Connect the Redis database to this Vercel project and redeploy.");
+  try {
+    const response = await fetch(url, { method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify(args), signal: AbortSignal.timeout(1e4) });
+    const body = await response.json();
+    if (!response.ok || body.error) throw new Error("Redis request failed");
+    return body.result;
+  } catch {
+    throw new ServiceError(503, "Session storage is unavailable. Please try again.");
+  }
+};
+var saveScript = "if redis.call('GET',KEYS[1]) ~= ARGV[1] then return 0 end redis.call('SET',KEYS[1],ARGV[2],'PX',ARGV[3]); return 1";
+function createStore(remote) {
+  const key = (id) => `scary-gate:shift:${id}`;
+  const ttl = (s) => Math.max(1, s.expires - Date.now());
+  return {
+    async create(s) {
+      const value = JSON.stringify(s);
+      if (remote) await remote(["SET", key(s.id), value, "PX", ttl(s)]);
+      else {
+        for (const [id, raw] of memory) if (JSON.parse(raw).expires <= Date.now()) memory.delete(id);
+        if (memory.size >= 500) throw new ServiceError(503, "The game is busy. Please try again later.");
+        memory.set(s.id, value);
+      }
+    },
+    async update(id, fn) {
+      const raw = remote ? await remote(["GET", key(id)]) : memory.get(id);
+      if (!raw) throw new ServiceError(404, "Your shift expired. Start a new shift.");
+      const s = JSON.parse(raw);
+      if (s.expires <= Date.now()) throw new ServiceError(404, "Your shift expired. Start a new shift.");
+      const result = await fn(s);
+      if (s.expires <= Date.now()) throw new ServiceError(404, "Your shift expired. Start a new shift.");
+      const value = JSON.stringify(s);
+      if (remote) {
+        if (await remote(["EVAL", saveScript, 1, key(id), raw, value, ttl(s)]) !== 1) throw new ServiceError(409, "Your shift changed while this request was running. Please try again.");
+      } else {
+        if (memory.get(id) !== raw) throw new ServiceError(409, "Your shift changed. Please try again.");
+        memory.set(id, value);
+      }
+      return result;
+    }
+  };
+}
+var store = createStore(process.env.VERCEL === "1" || redisConfig().url ? command : null);
+
 // src/server/index.ts
 var app = (0, import_express.default)();
 app.disable("x-powered-by");
@@ -28553,39 +28606,32 @@ app.use((_req, res, next) => {
   res.set("X-Content-Type-Options", "nosniff");
   next();
 });
-app.get("/api/health", (_req, res) => res.json({ ok: true, configured: !!process.env.LLM_API_KEY, model: process.env.LLM_NAME || "swiss-ai/Apertus-v1.5-70B" }));
+app.get("/api/health", (_req, res) => res.json({ ok: true, sessionStorage: redisConfig().url ? "redis" : process.env.VERCEL === "1" ? "missing" : "memory", configured: !!process.env.LLM_API_KEY, model: process.env.LLM_NAME || "swiss-ai/Apertus-v1.5-70B" }));
 app.get("/api/register", (_req, res) => res.json(publicRegister));
-app.post("/api/shifts", (_req, res) => {
-  for (const [id, s] of sessions) if (s.expires < Date.now()) sessions.delete(id);
-  if (sessions.size >= 500) throw new ServiceError(503, "The game is busy. Please try again later.");
-  res.json(snapshot(createSession()));
+app.post("/api/shifts", async (_req, res) => {
+  const s = createSession();
+  await store.create(s);
+  res.json(snapshot(s));
 });
-app.use("/api/shifts/:id", (req, res, next) => {
-  const s = sessions.get(req.params.id);
-  if (!s || s.expires < Date.now()) return res.status(404).json({ error: "Your shift expired. Start a new shift." });
-  res.locals.session = s;
-  next();
-});
-app.post("/api/shifts/:id/decision", (req, res) => {
+app.post("/api/shifts/:id/decision", async (req, res) => {
   const { admit, encounterId } = external_exports.object({ admit: external_exports.boolean(), encounterId: external_exports.string() }).parse(req.body);
-  const s = res.locals.session;
-  if (snapshot(s).visitor?.id !== encounterId) throw new ServiceError(409, "This visitor has already left.");
-  res.json(decide(s, admit));
+  const result = await store.update(req.params.id, (s) => {
+    if (snapshot(s).visitor?.id !== encounterId) throw new ServiceError(409, "This visitor has already left.");
+    return decide(s, admit);
+  });
+  res.json(result);
 });
 app.post("/api/shifts/:id/dialogue", async (req, res) => {
   const { text, language, encounterId } = external_exports.object({ text: external_exports.string().trim().min(1).max(2e3), language: external_exports.enum(["en", "de"]), encounterId: external_exports.string() }).parse(req.body);
-  const s = res.locals.session;
-  if (s.busy || snapshot(s).visitor?.id !== encounterId) throw new ServiceError(409, "The visitor is busy or has left.");
-  s.busy = true;
-  try {
-    const messages = [{ role: "system", content: prompt(current(s), language) }, ...s.history.slice(-12), { role: "user", content: text }];
-    const result = await dialogue(messages);
+  const result = await store.update(req.params.id, async (s) => {
     if (snapshot(s).visitor?.id !== encounterId) throw new ServiceError(409, "The visitor has left.");
-    s.history.push({ role: "user", content: text }, { role: "assistant", content: JSON.stringify(result) });
-    res.json(actionReply(s, result));
-  } finally {
-    s.busy = false;
-  }
+    const messages = [{ role: "system", content: prompt(current(s), language) }, ...s.history.slice(-12), { role: "user", content: text }];
+    const reply = await dialogue(messages);
+    s.history.push({ role: "user", content: text }, { role: "assistant", content: JSON.stringify(reply) });
+    s.history = s.history.slice(-12);
+    return actionReply(s, reply);
+  });
+  res.json(result);
 });
 app.post("/api/transcribe", async (req, res) => {
   const { audio, language } = external_exports.object({ audio: external_exports.string().min(40).max(7e6).regex(/^[A-Za-z0-9+/=]+$/), language: external_exports.enum(["en", "de"]) }).parse(req.body);
