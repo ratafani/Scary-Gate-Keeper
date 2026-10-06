@@ -1,10 +1,8 @@
 import { randomUUID, randomInt } from 'node:crypto';
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { z } from 'zod';
 import type { Shift, Language, Reply } from '../shared/types.ts';
+import village from '../../data/village.json';
 
-const village = JSON.parse(readFileSync(join(process.cwd(),'data','village.json'),'utf8'));
 export const dialogueSchema = z.object({speech:z.string().trim().min(1).max(1200),action:z.enum(['none','turn_around','jump'])}).strict();
 export function parseReply(content:string) {
   // Only accept a complete JSON object, never infer commands from dialogue.
