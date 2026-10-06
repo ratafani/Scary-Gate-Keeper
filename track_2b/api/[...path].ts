@@ -1,3 +1,3 @@
-import app from '../src/server/index';
+import app from './server.mjs';
 
 export default app;
