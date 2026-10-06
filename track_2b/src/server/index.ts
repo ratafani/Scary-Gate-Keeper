@@ -43,4 +43,5 @@ app.get('/',(_req,res)=>res.sendFile(fileURLToPath(new URL('../../dist/index.htm
 app.use((err:any,_req:express.Request,res:express.Response,_next:express.NextFunction)=>{
   res.status(err instanceof ServiceError?err.status:err instanceof z.ZodError?400:500).json({error:err instanceof ServiceError?err.message:err instanceof z.ZodError?'Please check your input.':'The request could not be completed. Please try again.'});
 });
-app.listen(Number(process.env.PORT||3000),'0.0.0.0',()=>console.log(`Kampung Sambau: http://localhost:${process.env.PORT||3000}`));
+export default app;
+if (process.env.VERCEL !== '1') app.listen(Number(process.env.PORT||3000),'0.0.0.0',()=>console.log(`Kampung Sambau: http://localhost:${process.env.PORT||3000}`));
