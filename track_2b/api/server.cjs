@@ -28102,9 +28102,6 @@ var coerce = {
 };
 var NEVER = INVALID;
 
-// src/server/index.ts
-var import_node_url = require("node:url");
-
 // src/server/game.ts
 var import_node_crypto = require("node:crypto");
 
@@ -28549,7 +28546,6 @@ async function dialogue(messages) {
 }
 
 // src/server/index.ts
-var import_meta = {};
 var app = (0, import_express.default)();
 app.disable("x-powered-by");
 app.use(import_express.default.json({ limit: "8mb" }));
@@ -28597,8 +28593,8 @@ app.post("/api/transcribe", async (req, res) => {
   res.json({ text: text.trim() });
 });
 app.use("/api", (_req, res) => res.status(404).json({ error: "Unknown API route." }));
-app.use(import_express.default.static((0, import_node_url.fileURLToPath)(new URL("../../dist", import_meta.url)), { maxAge: 36e5 }));
-app.get("/", (_req, res) => res.sendFile((0, import_node_url.fileURLToPath)(new URL("../../dist/index.html", import_meta.url))));
+app.use(import_express.default.static(`${process.cwd()}/dist`, { maxAge: 36e5 }));
+app.get("/", (_req, res) => res.sendFile(`${process.cwd()}/dist/index.html`));
 app.use((err, _req, res, _next) => {
   res.status(err instanceof ServiceError ? err.status : err instanceof external_exports.ZodError ? 400 : 500).json({ error: err instanceof ServiceError ? err.message : err instanceof external_exports.ZodError ? "Please check your input." : "The request could not be completed. Please try again." });
 });

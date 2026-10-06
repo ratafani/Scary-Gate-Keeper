@@ -1,6 +1,5 @@
 import express from 'express';
 import { z } from 'zod';
-import { fileURLToPath } from 'node:url';
 import { actionReply,createSession,current,decide,prompt,publicRegister,sessions,snapshot } from './game.ts';
 import { completion,dialogue,ServiceError } from './apertus.ts';
 const app=express();app.disable('x-powered-by');app.use(express.json({limit:'8mb'}));
@@ -38,8 +37,8 @@ app.post('/api/transcribe',async(req,res)=>{
   res.json({text:text.trim()});
 });
 app.use('/api',(_req,res)=>res.status(404).json({error:'Unknown API route.'}));
-app.use(express.static(fileURLToPath(new URL('../../dist',import.meta.url)),{maxAge:3600_000}));
-app.get('/',(_req,res)=>res.sendFile(fileURLToPath(new URL('../../dist/index.html',import.meta.url))));
+app.use(express.static(`${process.cwd()}/dist`,{maxAge:3600_000}));
+app.get('/',(_req,res)=>res.sendFile(`${process.cwd()}/dist/index.html`));
 app.use((err:any,_req:express.Request,res:express.Response,_next:express.NextFunction)=>{
   res.status(err instanceof ServiceError?err.status:err instanceof z.ZodError?400:500).json({error:err instanceof ServiceError?err.message:err instanceof z.ZodError?'Please check your input.':'The request could not be completed. Please try again.'});
 });
