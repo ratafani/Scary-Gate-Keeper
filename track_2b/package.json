@@ -2,9 +2,9 @@
   "name": "kampung-sambau-web", "private": true, "version": "0.1.0", "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "server": "tsx --env-file-if-exists=.env src/server/index.ts",
+    "server": "tsx src/server/index.ts",
     "build": "tsc --noEmit && vite build",
-    "start": "tsx --env-file-if-exists=.env src/server/index.ts",
+    "start": "tsx src/server/index.ts",
     "test": "node --import tsx --test src/server/*.test.ts"
   },
   "dependencies": {"react":"^19.0.0","react-dom":"^19.0.0","three":"^0.180.0","@react-three/fiber":"^9.0.0","express":"^5.1.0","tsx":"^4.20.0","zod":"^3.25.0"},

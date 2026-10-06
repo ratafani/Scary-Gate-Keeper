@@ -6,8 +6,8 @@ jobs:
   docker-smoke:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
       - run: make check
@@ -15,10 +15,17 @@ jobs:
         run: docker build -t kampung-sambau ./track_2b
       - name: Start with dummy inference credential
         run: docker run -d --name game -p 3000:3000 -e LLM_API_KEY=ci-not-a-real-key kampung-sambau
+      - name: Verify container stayed up
+        run: |
+          sleep 2
+          docker ps --filter name=game
+          docker inspect --format='{{.State.Status}} {{.State.ExitCode}}' game
       - name: Check serving contract (not live inference)
         run: |
           curl --retry 20 --retry-connrefused --retry-delay 1 --fail http://localhost:3000/api/health
           curl --fail http://localhost:3000/ > /dev/null
           curl --fail -X POST -H 'Content-Type: application/json' -d '{}' http://localhost:3000/api/shifts
       - if: always()
-        run: docker logs game || true
+        run: |
+          docker ps -a --filter name=game
+          docker logs game || true
