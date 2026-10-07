@@ -28578,6 +28578,7 @@ function createSession() {
     const j = (0, import_node_crypto.randomInt)(i + 1);
     [queue[i], queue[j]] = [queue[j], queue[i]];
   }
+  queue.splice(8);
   const s = { id: (0, import_node_crypto.randomUUID)(), queue, index: 0, score: 0, mistakes: 0, busy: false, history: [], expires: Date.now() + 2 * 36e5 };
   return s;
 }

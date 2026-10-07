@@ -13,7 +13,8 @@ test('Repeated actions and later visitors get unique event identities',()=>{
   const c=actionReply(s,{speech:'Okay',action:'turn_around'});assert.notEqual(a.encounterId,c.encounterId);
 });
 test('Full correct shift wins and resets history between visitors',()=>{
-  const s=createSession();const total=s.queue.length;assert.ok(total>0);
+  const s=createSession();const total=s.queue.length;assert.equal(total,8);
+  assert.equal(new Set(s.queue).size,8,'Select eight distinct scenario entries without replacement');
   for(let i=0;i<total;i++){
     assert.equal(snapshot(s).over,false);
     s.history.push({role:'user',content:'Hello'});
