@@ -13,6 +13,7 @@ export type Session = {id:string;queue:Encounter[];index:number;score:number;mis
 export function createSession():Session {
   const queue=[...village.encounters];
   for(let i=queue.length-1;i>0;i--){const j=randomInt(i+1);[queue[i],queue[j]]=[queue[j],queue[i]];}
+  queue.splice(8);
   const s={id:randomUUID(),queue,index:0,score:0,mistakes:0,busy:false,history:[],expires:Date.now()+2*3600_000};
   return s;
 }

@@ -13,8 +13,15 @@ test('Repeated actions and later visitors get unique event identities',()=>{
   const c=actionReply(s,{speech:'Okay',action:'turn_around'});assert.notEqual(a.encounterId,c.encounterId);
 });
 test('Full correct shift wins and resets history between visitors',()=>{
-  const s=createSession();for(let i=0;i<8;i++){s.history.push({role:'user',content:'Hello'});decide(s,current(s).llmPromptContext.roleType==='resident');assert.equal(s.history.length,0);}
-  assert.equal(snapshot(s).won,true);assert.equal(snapshot(s).score,800);assert.equal(snapshot(s).visitor,null);assert.throws(()=>decide(s,true));
+  const s=createSession();const total=s.queue.length;assert.equal(total,8);
+  assert.equal(new Set(s.queue).size,8,'Select eight distinct scenario entries without replacement');
+  for(let i=0;i<total;i++){
+    assert.equal(snapshot(s).over,false);
+    s.history.push({role:'user',content:'Hello'});
+    decide(s,current(s).llmPromptContext.roleType==='resident');
+    assert.equal(s.history.length,0);
+  }
+  assert.equal(snapshot(s).won,true);assert.equal(snapshot(s).score,total*100);assert.equal(snapshot(s).visitor,null);assert.throws(()=>decide(s,true));
 });
 test('Three wrong decisions lose and busy visitors cannot leave',()=>{
   const s=createSession();s.busy=true;assert.throws(()=>decide(s,true));s.busy=false;
