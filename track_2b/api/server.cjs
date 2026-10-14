@@ -28588,7 +28588,10 @@ function current(s) {
 function snapshot(s) {
   const over = s.mistakes >= 3 || s.index >= s.queue.length;
   const e = current(s);
-  const assetIndex = village_default.encounters.findIndex((v) => v.encounterID === e?.encounterID);
+  const characters = ["fatih", "sandy", "handaru", "alfa"];
+  const cardChar = e?.idCardData.idAsset.replace("Card ", "").toLowerCase() || "fatih";
+  const charIndex = Math.max(0, characters.indexOf(cardChar));
+  const assetIndex = charIndex * 2 + (e?.llmPromptContext.roleType === "anomaly" ? 1 : 0);
   return {
     id: s.id,
     index: s.index,
@@ -28598,7 +28601,7 @@ function snapshot(s) {
     over,
     won: over && s.mistakes < 3,
     time: `${String(Math.floor(s.index * 300 / s.queue.length / 60)).padStart(2, "0")}:${String(Math.floor(s.index * 300 / s.queue.length) % 60).padStart(2, "0")}`,
-    visitor: over ? null : { id: `${s.id}:${s.index}`, model: `/assets/models/visitor-${assetIndex}.glb`, card: e.idCardData, cardImage: `/assets/card-${e.idCardData.idAsset.replace("Card ", "").toLowerCase()}.png` }
+    visitor: over ? null : { id: `${s.id}:${s.index}`, model: `/assets/models/visitor-${assetIndex}.glb`, card: e.idCardData, cardImage: `/assets/card-${cardChar}.png` }
   };
 }
 function decide(s, admit) {

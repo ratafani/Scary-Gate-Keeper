@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createSession,snapshot,decide,parseReply,actionReply,current,prompt} from './game.ts';
+import village from '../../data/village.json';
 test('Apertus actions require a complete valid envelope',()=>{
   assert.equal(parseReply('{"speech":"Yes","action":"jump"}').action,'jump');
   for(const bad of ['Sure, I will jump','{"speech":"Jump"}','{"speech":"Yes","action":"fly"}','{"speech":"Yes","action":"jump","score":100}'])assert.throws(()=>parseReply(bad));
@@ -32,3 +33,12 @@ test('Jump physics depend on trusted profile, not model parameters',()=>{
   const s=createSession();for(const e of s.queue){s.queue[s.index]=e;const r=actionReply(s,{speech:'Okay',action:'jump'});assert.equal(r.fallSeconds,e.llmPromptContext.roleType==='anomaly'?2.2:0.65);}
 });
 test('Prompt retains contract and selected language',()=>{assert.match(prompt(current(createSession()),'de'),/German/);assert.match(prompt(current(createSession()),'en'),/turn_around/);});
+test('Every encounter maps to an existing visitor model (0..7)',()=>{
+  const s=createSession();
+  for(const e of village.encounters){
+    s.queue=[e];s.index=0;
+    const snap=snapshot(s);
+    assert.match(snap.visitor!.model,/^\/assets\/models\/visitor-[0-7]\.glb$/);
+  }
+});
+

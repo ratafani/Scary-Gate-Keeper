@@ -72,11 +72,12 @@ function NPC({visitor,reply,departure,onDone,onReady,onDeparted}:{visitor:Visito
       const duration=action.getClip().duration;
       const apex=duration*(9/17); // Apex measured in the supplied 33-frame jump.
       const total=a.action==='turn_around'?4:apex+a.fall;
+      if(a.action==='turn_around')g.rotation.y=-Math.min(a.time/4,1)*Math.PI*2;
       action.time=a.action==='turn_around'?Math.min(a.time/4,1)*duration:
         a.time<=apex?a.time:apex+Math.min((a.time-apex)/a.fall,1)*(duration-apex);
       // Evaluate the authored pose, including root movement, exactly once.
       mixer.update(0);
-      if(a.time>=total){action.stop();animation.current=null;onDone();}
+      if(a.time>=total){action.stop();animation.current=null;g.rotation.y=0;onDone();}
 
     }
   });

@@ -38,7 +38,7 @@ The source game supplied scene/UI assets. Original USD walk deformation is expor
 
 ## 5. Evaluation
 
-Verified locally: production/TypeScript build passed and ten automated tests passed. Tests cover strict response validation, repeated action IDs, encounter isolation, win/loss state, trusted jump timing, language prompting, rejection boundaries, animation presence (Walk, Jump, Turn) in all eight GLBs, and actual Three.js vertex deformation during Walk, Jump, and Turn playback. These are engineering checks, not model accuracy measurements.
+Verified locally: production/TypeScript build passed and eleven automated tests passed. Tests cover strict response validation, repeated action IDs, encounter isolation, win/loss state, trusted jump timing, language prompting, rejection boundaries, encounter model mapping (0..7), animation presence (Walk, Jump, Turn) in all eight GLBs, and actual Three.js vertex deformation during Walk, Jump, and Turn playback. These are engineering checks, not model accuracy measurements.
 
 Browser inspection verified scene loading, rejection and progression to a second visitor without reported browser errors. Docker is unavailable on this development machine; no successful container run is claimed.
 
