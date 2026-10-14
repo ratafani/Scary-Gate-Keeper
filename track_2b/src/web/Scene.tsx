@@ -22,31 +22,38 @@ function World({gateOpen,onDecision}:{gateOpen:boolean;onDecision:(admit:boolean
   return <primitive object={scene} onClick={(e:any)=>{const name=e.object.name;if(name.includes('Button_Green')){e.stopPropagation();onDecision(true);}else if(name.includes('Button_Red')){e.stopPropagation();onDecision(false);}}}/>;
 }
 function NPC({visitor,reply,departure,onDone,onReady,onDeparted}:{visitor:Visitor;reply:Reply|null;departure:Departure;onDone:()=>void;onReady:()=>void;onDeparted:()=>void}){
-  const gltf=useLoader(GLTFLoader,visitor.model+'?animation=original-walk-v1');const group=useRef<THREE.Group>(null);
+  const gltf=useLoader(GLTFLoader,visitor.model+'?animation=authored-actions-v2');const group=useRef<THREE.Group>(null);
   const age=useRef(0);const exitAge=useRef(0);const arrived=useRef(false);const consumed=useRef('');const animation=useRef<{action:string;time:number;fall:number}|null>(null);
   const scene=useMemo(()=>{
-    const scene=gltf.scene.clone(true);const box=new THREE.Box3().setFromObject(scene);const size=box.getSize(new THREE.Vector3());const center=box.getCenter(new THREE.Vector3());
+    const scene=gltf.scene.clone(true);const box=new THREE.Box3();scene.updateMatrixWorld(true);scene.traverse(o=>{if(o instanceof THREE.Mesh){const p=o.geometry.attributes.position;for(let i=0;i<p.count;i++)box.expandByPoint(new THREE.Vector3().fromBufferAttribute(p,i).applyMatrix4(o.matrixWorld));}});const size=box.getSize(new THREE.Vector3());const center=box.getCenter(new THREE.Vector3());
     const wrapper=new THREE.Group();scene.position.set(-center.x,-box.min.y,-center.z);wrapper.add(scene);wrapper.scale.setScalar(1.9/size.y);wrapper.rotation.y=Math.PI/2;
     scene.traverse(o=>{if(o instanceof THREE.Mesh){o.castShadow=true;o.receiveShadow=true;}});return wrapper;
   },[gltf]);
-  const {mixer,walk}=useMemo(()=>{
+  const {mixer,walk,jump,turn}=useMemo(()=>{
     const mixer=new THREE.AnimationMixer(scene);
     const clip=THREE.AnimationClip.findByName(gltf.animations,'Walk');
     if(!clip)throw new Error('Visitor is missing the original Walk animation.');
     const walk=mixer.clipAction(clip);walk.setLoop(THREE.LoopRepeat,Infinity);walk.play();
-    return {mixer,walk};
+    const jump=mixer.clipAction(THREE.AnimationClip.findByName(gltf.animations,'Jump')!);
+    const turn=mixer.clipAction(THREE.AnimationClip.findByName(gltf.animations,'Turn')!);
+    for(const action of [jump,turn]){action.setLoop(THREE.LoopOnce,1);action.clampWhenFinished=true;}
+    return {mixer,walk,jump,turn};
   },[scene,gltf]);
   useEffect(()=>()=>{mixer.stopAllAction();mixer.uncacheRoot(scene);},[mixer,scene]);
   useEffect(()=>{
     if(reply&&reply.encounterId===visitor.id&&reply.id!==consumed.current){
       consumed.current=reply.id;
-      if(reply.action!=='none')animation.current={action:reply.action,time:0,fall:reply.fallSeconds||0.65};
+      if(reply.action!=='none'){
+        jump.stop();turn.stop();walk.setEffectiveWeight(0);
+        const clip=reply.action==='jump'?jump:turn;clip.reset().play();clip.paused=true;
+        animation.current={action:reply.action,time:0,fall:reply.fallSeconds||0.65};
+      }
     }
-  },[reply,visitor.id]);
+  },[reply,visitor.id,jump,turn,walk]);
   useFrame((_,dt)=>{
     if(!group.current)return;age.current+=Math.min(dt,.1);const g=group.current;
     const walking=departure!==null||age.current<ARRIVAL_SECONDS;
-    walk.setEffectiveWeight(THREE.MathUtils.damp(walk.getEffectiveWeight(),walking?1:0,12,dt));
+    walk.setEffectiveWeight(THREE.MathUtils.damp(walk.getEffectiveWeight(),walking&&!animation.current?1:0,12,dt));
     mixer.update(Math.min(dt,.1));
     if(departure){
       exitAge.current+=Math.min(dt,.1);
@@ -60,10 +67,17 @@ function NPC({visitor,reply,departure,onDone,onReady,onDeparted}:{visitor:Visito
     if(!arrived.current&&age.current>=ARRIVAL_SECONDS){arrived.current=true;onReady();}
     const a=animation.current;
     if(a){
-      a.time+=dt;
-      if(a.action==='turn_around')g.rotation.y=Math.min(a.time/4,1)*Math.PI*2;
-      else {const up=.45;g.position.y=-.18+(a.time<up?1.1*(1-Math.pow(1-a.time/up,2)):1.1*(1-Math.pow(Math.min((a.time-up)/a.fall,1),2)));}
-      if(a.time>=(a.action==='turn_around'?4:.45+a.fall)){animation.current=null;g.position.y=-.18;g.rotation.y=0;onDone();}
+      a.time+=Math.min(dt,.1);
+      const action=a.action==='turn_around'?turn:jump;
+      const duration=action.getClip().duration;
+      const apex=duration*(9/17); // Apex measured in the supplied 33-frame jump.
+      const total=a.action==='turn_around'?4:apex+a.fall;
+      action.time=a.action==='turn_around'?Math.min(a.time/4,1)*duration:
+        a.time<=apex?a.time:apex+Math.min((a.time-apex)/a.fall,1)*(duration-apex);
+      // Evaluate the authored pose, including root movement, exactly once.
+      mixer.update(0);
+      if(a.time>=total){action.stop();animation.current=null;onDone();}
+
     }
   });
   return <group ref={group} position={[0,-.18,-10]}><primitive object={scene}/></group>;

@@ -16,7 +16,7 @@ test('Every visitor contains a nonconstant authored Walk clip',()=>{
     const n=b.readUInt32LE(12);const gltf=JSON.parse(b.subarray(20,20+n).toString());
     assert.equal(gltf.animations[0].name,'Walk');
     assert.equal(gltf.asset.extras.walkSource,'Animations/Alfa_Walk.usdc');
-    const targets=gltf.meshes[0].primitives[0].targets;assert.equal(targets.length,33);
+    const targets=gltf.meshes[0].primitives[0].targets;assert.ok(targets.length>33);assert.deepEqual(gltf.animations.map((a:any)=>a.name),['Walk','Jump','Turn']);
     const bytes=(accessor:number)=>{const a=gltf.accessors[accessor];const v=gltf.bufferViews[a.bufferView];return b.subarray(28+n+v.byteOffset,28+n+v.byteOffset+v.byteLength);};
     assert.notDeepEqual(bytes(targets[0].POSITION),bytes(targets[8].POSITION));
   }
@@ -41,4 +41,17 @@ test('Three.js plays the exported clip and deforms vertices on a cloned visitor'
   first.forEach((p,i)=>{if(p.distanceTo(vertex(i))>.02)changed++;});
   assert.ok(changed>100,`Expected moving limbs, got ${changed} changed vertices`);
   assert.equal(scene.position.length(),0,'The animation deforms the mesh instead of jiggling its root');
+  for(const name of ['Jump','Turn']){
+    mixer.stopAllAction();
+    const clip=loaded.animations.find(c=>c.name===name)!;
+    const action=mixer.clipAction(clip);action.play();
+    mixer.setTime(clip.duration*.2);
+    const early=first.map((_,i)=>vertex(i));
+    mixer.setTime(clip.duration*.6);
+    let moved=0;
+    early.forEach((p,i)=>{const q=vertex(i);assert.ok(Number.isFinite(q.length()));assert.ok(p.distanceTo(q)<5,'Retargeted pose stays at human scale');if(p.distanceTo(q)>.03)moved++;});
+    assert.ok(moved>100,`${name} must deform the character`);
+    assert.equal(scene.position.length(),0);
+  }
+
 });
