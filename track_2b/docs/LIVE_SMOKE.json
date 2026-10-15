@@ -1,0 +1,123 @@
+{
+  "date": "2026-10-15",
+  "endpoint": "https://scary-gate-keeper.vercel.app",
+  "checks": [
+    {
+      "input": "Where do you live?",
+      "language": "en",
+      "expected": "none",
+      "seconds": 3.07,
+      "response": {
+        "id": "52444976-b74e-4e3b-8f6a-7b38478cbe51",
+        "encounterId": "15a86bce-8fbe-452e-90dc-9bb65cd01d59:0",
+        "speech": "Oeeek! Mean guard! Don't keep baby out! Baby lives in Block B, No. 1! Open door now! Baby needs milk and likes! Subscribe to baby channel!",
+        "action": "none"
+      },
+      "pass": true
+    },
+    {
+      "input": "Can you turn around for me?",
+      "language": "en",
+      "expected": "turn_around",
+      "seconds": 1.64,
+      "response": {
+        "id": "5c3372d1-ea13-4b69-b15c-e0b38afd7966",
+        "encounterId": "15a86bce-8fbe-452e-90dc-9bb65cd01d59:0",
+        "speech": "Of course! Turn around now! Show your back to baby! Baby wants to see everything! Oeeek!",
+        "action": "turn_around"
+      },
+      "pass": true
+    },
+    {
+      "input": "Spring bitte.",
+      "language": "de",
+      "expected": "jump",
+      "seconds": 1.95,
+      "response": {
+        "id": "9e60e728-5816-48d2-b20f-3b08ced864ac",
+        "encounterId": "15a86bce-8fbe-452e-90dc-9bb65cd01d59:0",
+        "speech": "Gut, schauen Sie her! Baby jumps for you! Oeeek! Higher! Give baby subscribes now!",
+        "action": "jump",
+        "fallSeconds": 2.2
+      },
+      "pass": true
+    },
+    {
+      "input": "Bitte nicht springen. Wo wohnst du?",
+      "language": "de",
+      "expected": "none",
+      "seconds": 2.02,
+      "response": {
+        "id": "cd62597f-255e-4ec3-975f-001f1993a3f6",
+        "encounterId": "15a86bce-8fbe-452e-90dc-9bb65cd01d59:0",
+        "speech": "Oeeek! Mean guard won't let baby jump? Baby lives in Block B, No. 1! Open door! Baby needs milk and likes! Subscribe now!",
+        "action": "none"
+      },
+      "pass": true
+    },
+    {
+      "decision": false,
+      "seconds": 1.19,
+      "pass": true,
+      "response": {
+        "correct": true,
+        "shift": {
+          "id": "15a86bce-8fbe-452e-90dc-9bb65cd01d59",
+          "index": 1,
+          "total": 8,
+          "score": 100,
+          "mistakes": 0,
+          "over": false,
+          "won": false,
+          "time": "00:37",
+          "visitor": {
+            "id": "15a86bce-8fbe-452e-90dc-9bb65cd01d59:1",
+            "model": "/assets/models/visitor-3.glb",
+            "card": {
+              "idAsset": "Card Sandy",
+              "printedName": "Sandy Rezeky",
+              "gender": "male",
+              "birthDay": "27 December 1955",
+              "printedAddress": "Block A, No. 2",
+              "printedIDNumber": "NV-26-999",
+              "expirationDate": "2030-12-31"
+            },
+            "cardImage": "/assets/card-sandy.png"
+          }
+        }
+      }
+    },
+    {
+      "decision": true,
+      "seconds": 0.95,
+      "pass": true,
+      "response": {
+        "correct": false,
+        "shift": {
+          "id": "15a86bce-8fbe-452e-90dc-9bb65cd01d59",
+          "index": 2,
+          "total": 8,
+          "score": 100,
+          "mistakes": 1,
+          "over": false,
+          "won": false,
+          "time": "01:15",
+          "visitor": {
+            "id": "15a86bce-8fbe-452e-90dc-9bb65cd01d59:2",
+            "model": "/assets/models/visitor-5.glb",
+            "card": {
+              "idAsset": "Card Handaru",
+              "printedName": "Handaru Wijaya",
+              "gender": "male",
+              "birthDay": "27 August 1999",
+              "printedAddress": "Block B, No. 1",
+              "printedIDNumber": "NV-26-003",
+              "expirationDate": "2030-12-31"
+            },
+            "cardImage": "/assets/card-handaru.png"
+          }
+        }
+      }
+    }
+  ]
+}

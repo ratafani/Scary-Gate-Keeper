@@ -1,6 +1,6 @@
 # Track 2 B: Own Project
 
-## Kampung Sambau - judge guide
+## Siskamling / Kampung Sambau - judge guide
 
 Copy `.env.example` to `.env` here and set `LLM_API_KEY`. Run `make run` here or from the repository root. Open http://localhost:3000 in a WebGL2 browser. Docker Compose v2 and a reachable Apertus endpoint are required. The image packages the app, not model weights.
 

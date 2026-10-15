@@ -1,72 +1,65 @@
-# Technical report - Kampung Sambau
+# Kampung Sambau - Of the Dark
 
-Track: Track 2B - Own Project. Event: Hack Apertus Online 2026.
-Public project identifier: KampungSambau. Personal identities are omitted at the owner's request. Confirm the registered team alias before final submission.
-Status: submission draft, 6 October 2026. Public repository URL and demo video URL are not yet available.
+Team: Siskamling | Hack Apertus, Track 2B - Own Project
+Technical report | 15 October 2026
+Repository: https://github.com/ratafani/Scary-Gate-Keeper
+Public demo: https://scary-gate-keeper.vercel.app/
 
-## 1. Summary
+## 1. Purpose and contribution
 
-Kampung Sambau is a browser social-deduction game exploring character-specific interviews and embodied actions with an open language model. A player guards a village, compares testimony with identity cards and a resident register, and admits or rejects visitors. Apertus v1.5 70B generates English/German dialogue and selects turn/jump commands. Trusted game logic controls scoring and movement. This is an entertainment prototype, not real-world identity verification.
+Kampung Sambau is a browser-based 3D social-deduction game. The player guards a village at night, interviews visitors, inspects their ID cards and resident information, and decides whether to admit them. Apertus gives each fictional visitor a character-specific voice and translates natural-language requests into visible actions. This is an entertainment prototype, not real-world identity verification.
 
-New hackathon work comprises the browser client, Docker packaging, Apertus action contract, validation, and USD-to-web animation conversion. The pre-existing owned NeighborhoodWatchVision project supplied characters, village assets, scenario data, visual design and the game concept. This reuse is disclosed; resolve eligibility with organizers if it conflicts with the requirement for a new hackathon project.
+The new hackathon work includes the React/Three.js web implementation, Apertus integration, structured action validation, Docker packaging, shared session persistence, responsive illustrated interface, and conversion of authored walk, jump and turn animations. The existing, team-owned NeighborhoodWatchVision concept, village, character assets and scenario approach were reused. This provenance is disclosed against the requirement that the submitted project be new; organizer interpretation of reused assets remains applicable.
 
-## 2. Architecture
+## 2. Purposeful use of Apertus
 
-The browser runs React, TypeScript and Three.js. A Node/Express service serves local GLB assets and UI textures, maintains private visitor profiles, dialogue history and scoring, and calls the configured chat-completions endpoint. Credentials are supplied through container environment variables and never included in browser bundles.
+The runtime model is swiss-ai/Apertus-v1.5-70B through the configurable OpenAI-compatible CSCS endpoint. No other runtime language model is used. The system prompt supplies the selected English/German language, private character profile, ID facts, behavioral constraints and recent conversation. Apertus must return exactly a speech string and an action enum: none, turn_around or jump.
 
-Data flows from browser text or WAV audio to the service, then Apertus, then a validated speech/action response and browser animation. Every response has a unique action ID and encounter ID. Rejection walks right outside a closed gate; admission walks left through the open gate. The renderer waits for departure completion before showing the next visitor.
+The model decides whether a request requires an action. The application validates the complete JSON envelope with Zod and permits one Apertus repair attempt for invalid output. Commands are not inferred from player keywords or dialogue prose. An accepted response carries unique action and encounter IDs so repeated requests work and delayed replies cannot affect a different visitor. Trusted server logic determines scoring and anomaly jump descent; model output cannot set scores or physics parameters.
 
-### Target architecture (mandatory)
+Requests use temperature 0.35, max_tokens 240, JSON-object response mode, and a 45-second timeout per completion. A repair may require a second completion. Recent dialogue is bounded to 12 messages. This keeps prompts bounded but is not a measured cost or scalability guarantee.
 
-Selected target: sovereign Swiss cloud. CSCS is the default inference endpoint. The application image can run behind an HTTPS reverse proxy on Swiss-operated infrastructure. This is a deployment design, not evidence of a completed sovereign deployment. Operator, jurisdiction, residency, application hosting and provider retention policies must be verified before final submission. No air-gapped operation or sovereign certification is claimed for the current local demo.
+## 3. Architecture and data
 
-Build time uses a Node base image and locked npm dependencies. Offline asset conversion used OpenUSD, NumPy and Pillow; judges do not run it. Runtime needs the browser, application container and configured inference endpoint. There are no runtime asset CDNs, analytics services or implicit browser speech-recognition providers. A compatible on-premise Apertus endpoint is configurable, but its provisioning/hardware are not bundled or tested.
+The browser renders bundled village and character GLBs using React, TypeScript, Three.js and WebGL2. A Node/Express service owns private profiles, scoring and the Apertus credentials. Chat and gate decisions use JSON HTTP endpoints. A shift chooses eight scenario entries without replacement from 13 authored encounters; recurring character identities may have different scenarios. Five resident profiles support investigation.
 
-## 3. Use of Apertus
+Visitors arrive and leave using the authored Walk clip. Rejecting sends the NPC right outside the closed gate; admitting opens the gate and sends the NPC left into the village. Turn uses authored stepping and a four-second 360-degree body rotation. Jump uses authored poses; anomaly descent is stretched relative to ordinary descent. The supplied Alfa animation rig is retargeted onto the shared web visitor geometry. Sampled morph animation preserves materials but increases download size. Fatih/Handaru-specific FBX geometry is not separately imported.
 
-Model: swiss-ai/Apertus-v1.5-70B, nonthinking, through hosted CSCS inference. No fine-tuning or secondary runtime model is used. The prompt contains the character profile, card, selected language, roleplay constraints and recent structured history. It requests exactly a speech string and action enum: none, turn_around or jump.
+The Docker deployment stores sessions in process memory with a two-hour expiry and a bounded local session count. The public Vercel demo uses Upstash Redis because function instances do not share memory. Redis stores session JSON and conversation history with expiry. Atomic compare-and-set updates reject stale concurrent writes. Redis credentials and the inference key remain server-side. The data directory is 25,378 bytes, below the 100 MB limit.
 
-Temperature is 0.35, dialogue limit 240 tokens, and request timeout 45 seconds. JSON-object response mode is requested; server validation permits one model repair attempt if output is malformed. The app never infers commands from prose or player keywords. Apertus selects actions; trusted game logic supplies physics, including slower anomaly descent. Prompt and adapter sources are src/server/game.ts and src/server/apertus.ts.
+The microphone path records WAV and requests transcription from the same configured inference endpoint. Audio capability and Swiss German recognition quality are unverified; text input is the supported evaluation path. No microphone accuracy claim is made. Recordings are not persisted by the app. In the public demo, text/history is processed by Vercel, Redis and the inference provider; provider retention is outside the application's guarantees.
 
-Microphone recordings go to the same endpoint as WAV with a transcription instruction. Endpoint support and recognition quality, especially Swiss German, remain unverified. Players review a transcript before sending it. Text input remains available after audio errors.
+## 4. Mandatory deployment architecture
 
-## 4. Data
+Selected target: on-premise, under the deploying organization's administration. The root make run command launches the Node application through Docker Compose, serves bundled assets locally and binds port 3000 to host loopback. It requires Docker Compose v2, a WebGL2 browser and a reachable Apertus-compatible inference service. LLM_NAME, LLM_BASE_URL and LLM_API_KEY configure that service.
 
-The included village dataset contains eight encounters and five resident profiles, with authored addresses, personalities and anomaly contradictions. The owner stated ownership of reused assets. Before publication, review names, portraits, texture text and any material derived from real people. No user audio or model responses are written to disk by the app. Sessions and history reside in memory with a nominal two-hour expiry checked on access.
+For an organization-controlled deployment, run the application container and Apertus inference endpoint on infrastructure administered by that organization, and point LLM_BASE_URL to its endpoint. Keep sessions in the application's built-in memory store for a single instance; no Vercel or Upstash dependency is required by the Docker runtime. Multiple app replicas would need organization-controlled shared storage. HTTPS can be supplied by an organization-managed reverse proxy.
 
-The source game supplied scene/UI assets. Original USD walk deformation is exported to glTF morph animation at 12 frames per second. Source texture mappings appear in public/assets/conversion-manifest.json. The data directory is approximately 20 KB; make check enforces the template's 100 MB cap. No separate public Hugging Face dataset is currently proposed.
+The Docker image packages the application, not the 70B model weights or inference server. Model provisioning, compute capacity and operation remain the deployer's responsibility and have not been tested on organization-owned hardware. Initial builds fetch Node and npm dependencies; the default CSCS endpoint requires external network access. We do not claim air-gapped operation. Vercel/Upstash are public demonstration services, not evidence of Swiss-sovereign hosting or the on-premise target.
 
-## 5. Evaluation
+## 5. Verification and reproducibility
 
-Verified locally: production/TypeScript build passed and eleven automated tests passed. Tests cover strict response validation, repeated action IDs, encounter isolation, win/loss state, trusted jump timing, language prompting, rejection boundaries, encounter model mapping (0..7), animation presence (Walk, Jump, Turn) in all eight GLBs, and actual Three.js vertex deformation during Walk, Jump, and Turn playback. These are engineering checks, not model accuracy measurements.
+On 15 October 2026, make check, all 11 automated tests, and the TypeScript/Vite/server production build passed locally. Tests cover strict action response validation, unique reply IDs, encounter isolation, win/loss logic, trusted jump timing, language prompting, all encounter-to-model mappings, rejection route boundaries, authored clips and actual Three.js vertex deformation, plus shared session progress and rejection of conflicting writes.
 
-Browser inspection verified scene loading, rejection and progression to a second visitor without reported browser errors. Docker is unavailable on this development machine; no successful container run is claimed.
+GitHub Actions Docker verification passed for main commit 04a18f71 and feature commit 2a0577cc. The workflow builds the Docker image, runs tests/build inside it, starts the container with a dummy inference key, and checks health, static frontend and shift creation. This proves container startup and those serving endpoints; it does not prove live inference inside Docker or a complete interactive shift through root make run.
 
-The previous baked-pose/jiggle implementation provides a qualitative animation baseline with no original walk clip. Current assets contain 33 sampled walk poses per visitor; the loader test confirms over 100 vertices change during playback while the animation root remains stationary. This is not a measurement of perceived animation quality.
+CI evidence: https://github.com/ratafani/Scary-Gate-Keeper/actions/runs/38511334198
 
-Before submission, measure repeated English/German commands, negations, JSON validity, repair frequency, correct action rate, response latency, token usage and character consistency on the live endpoint. Swiss German requires a separate consented audio test set. No aggregate live metrics or cost claims are made without measurements.
+The public production health endpoint reports configured Apertus and Redis session storage. A live smoke check on 15 October used four prompts: an English address question, English turn request, German jump request and German negated jump/address request. All four returned the expected action; wall-clock API times were 3.07, 1.64, 1.95 and 2.02 seconds. Two subsequent gate decisions succeeded across visitors. Responses to German prompts mixed English into the speech, so bilingual understanding worked in this sample but German output consistency needs improvement. Full responses are in docs/LIVE_SMOKE.json. This small, single-session sample is not a statistical model evaluation, repair-rate measurement or claim of Swiss German support.
 
-## 6. Limitations
+To reproduce: clone the repository; copy track_2b/.env.example to track_2b/.env; set LLM_API_KEY and, if needed, LLM_NAME/LLM_BASE_URL; run make run from the repository root; open http://localhost:3000. Run make down to stop. Judges do not need Xcode, Blender or asset conversion. For development use Node 22, npm ci, npm test and npm run build inside track_2b.
 
-Unverified Docker execution, sovereign hosting, microphone compatibility and live-model reliability remain material gaps. Foliage conversion is imperfect; the idle animation loop is unported; sampled animation increases asset size. Sessions are not persistent or suitable for multi-instance deployment. Encounter order is random, so evaluations must record the encounter/request rather than assume a reproducible shuffle. Public-repo and demo links remain pending.
+## 6. Limitations and responsible scope
 
-## 7. Reproducibility
+Remaining verification gaps include a clean root make run plus live inference playthrough, on-premise inference provisioning, broad English/German model reliability measurements, microphone capability, and mobile-device performance coverage. A JSON repair adds latency and does not guarantee valid output. Network failures surface retryable errors. No aggregate accuracy, cost, or concurrency benchmark is claimed.
 
-On a clean checkout, configure LLM_NAME, LLM_BASE_URL and LLM_API_KEY in the environment or ignored track_2b/.env. Run make run from the repository root and open http://localhost:3000. The root forwards to the track directory. Docker Compose v2 and a WebGL2 browser are required. The app container needs no GPU with hosted inference. Initial builds fetch the Node base image and locked npm packages.
+Authored fictional data and reused assets are supplied by the project owner. The repository is public and source reuse is disclosed. No real-world admission, identity or safety decision should be based on this prototype. Scenario evaluation should record the selected character and prompt because encounter order is randomized.
 
-Docker builds run automated tests and the production build, then serve the app as a non-root user. make down stops it. Node 22 plus npm ci supports local development. make check validates layout/data limits. CI is configured for a container smoke test with a dummy key, not a live inference test; no CI result is claimed yet. Record the actual implementation commit SHA for the final report. The current uncommitted changes must not be attributed to the template's commit.
-
-## 8. Next steps
-
-Validate Docker and live bilingual interactions, resolve audio capability, verify Swiss hosting, complete asset provenance/privacy review, publish a project repo, record a demo of at most two minutes, and regenerate the report with measured results and final identifiers.
-
-## License
-
-Code: Apache-2.0. Documentation/report: CC-BY-4.0. Repository NOTICE describes provenance and remaining asset-level review. Required organizer registration details must still be supplied through the submission process.
+Code is Apache-2.0; documentation/report is CC-BY-4.0. See LICENSE and NOTICE for provenance. A demo video of at most two minutes accompanies the submission separately; its URL must be supplied in the submission form. No separate Hugging Face dataset submission is proposed.
 
 ## References
 
-- https://hackapertus.notion.site/track-2-b-own-project
-- https://github.com/HackApertus/project-template
-- https://docs.cscs.ch/services/inference/api/
-- https://huggingface.co/swiss-ai/Apertus-v1.5-70B
+Track requirements: https://hackapertus.notion.site/track-2-b-own-project
+Template: https://github.com/HackApertus/project-template
+Inference API: https://docs.cscs.ch/services/inference/api/
+Model: https://huggingface.co/swiss-ai/Apertus-v1.5-70B

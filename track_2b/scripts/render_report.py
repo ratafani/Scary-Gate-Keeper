@@ -8,7 +8,7 @@ from reportlab.lib.enums import TA_LEFT
 from pypdf import PdfReader
 
 root=Path(__file__).resolve().parents[1]
-target=root/'KampungSambau_Report.pdf'
+target=root/'Siskamling_Report.pdf'
 styles=getSampleStyleSheet()
 styles.add(ParagraphStyle(name='ReportBody',fontName='Helvetica',fontSize=10,leading=14,spaceAfter=8))
 styles.add(ParagraphStyle(name='ReportTitle',fontName='Helvetica-Bold',fontSize=23,leading=28,spaceAfter=15,textColor=HexColor('#25473e')))
@@ -23,9 +23,9 @@ for block in (root/'technical_report.md').read_text().strip().split('\n\n'):
     story.append(Paragraph(escape(block).replace('\n','<br/>'),styles[style]))
 def footer(canvas,doc):
     canvas.setFont('Helvetica',8);canvas.setFillColor(HexColor('#667770'))
-    canvas.drawString(44,27,'KAMPUNG SAMBAU  |  TRACK 2B  |  SUBMISSION DRAFT')
+    canvas.drawString(44,27,'SISKAMLING  |  KAMPUNG SAMBAU  |  TRACK 2B')
     canvas.drawRightString(551,27,str(doc.page))
-doc=SimpleDocTemplate(str(target),pagesize=(595,842),rightMargin=44,leftMargin=44,topMargin=42,bottomMargin=48,title='Kampung Sambau - Technical Report',author='KampungSambau')
+doc=SimpleDocTemplate(str(target),pagesize=(595,842),rightMargin=44,leftMargin=44,topMargin=42,bottomMargin=48,title='Kampung Sambau - Technical Report',author='Siskamling')
 doc.build(story,onFirstPage=footer,onLaterPages=footer)
 pages=len(PdfReader(target).pages)
 assert pages<=6,f'Report has {pages} pages; maximum is 6'
