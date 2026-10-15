@@ -21,7 +21,7 @@ Docker packages the app, not the 70B weights. The inference endpoint must be rea
 The official template's `track_2b/` directory and prerequisite files are retained; the other challenge directories were removed. `make run` works from this root or inside `track_2b/`.
 
 - [Track guide](track_2b/README.md)
-- [Technical report source](track_2b/technical_report.md) and [PDF draft](track_2b/KampungSambau_Report.pdf)
+- [Technical report source](track_2b/technical_report.md) and [PDF](track_2b/Siskamling_Report.pdf)
 - [Submission audit](track_2b/docs/SUBMISSION.md)
 - [API contract](track_2b/docs/API.md)
 - [Deployment boundaries](track_2b/docs/DEPLOYMENT.md)
@@ -30,6 +30,9 @@ The official template's `track_2b/` directory and prerequisite files are retaine
 
 ## Status
 
-Local prototype; not a completed submission. Docker launch, live-model aggregate evaluation and sovereign deployment remain unverified. Public repository URL, demo video and final report metadata are outstanding. The local `origin` still points to the official template, not a project submission repository; do not push project work there.
+Team: **Siskamling**. Public repository: https://github.com/ratafani/Scary-Gate-Keeper. Demo: https://scary-gate-keeper.vercel.app/.
+
+Repository checks, 11 automated tests, production build and GitHub Actions Docker smoke checks pass. Docker CI uses a dummy inference key; a clean root `make run` with live inference remains a final manual check. The public Vercel demo uses Redis sessions; Docker uses in-memory sessions by default. The selected mandatory architecture is on-premise deployment with an organization-administered Apertus endpoint. Vercel is a demo host, not Swiss-sovereign hosting evidence. See the submission audit for remaining video and validation items.
+
 
 Code: Apache-2.0. Documentation/report: CC-BY-4.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE). Public materials use the project identifier without adding personal/team identities.

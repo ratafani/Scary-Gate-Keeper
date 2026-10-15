@@ -35,3 +35,8 @@ Assets originate from the user's NeighborhoodWatchVision project. `public/assets
 After base conversion, run `scripts/export_walk.py` with the same rkassets path. It verifies matching source joints, evaluates the authored walk through USD skinning, and adds a `Walk` clip to every visitor GLB. Always regenerate clean base assets before rerunning this second step.
 
 The source scene layout is preserved. Reality Composer Pro timelines are replaced with browser behavior. The source resident prompt's contradictory claim that B-3 is empty is corrected to match Peja's resident entry; anomaly contradictions remain intentional.
+
+
+## Submission update - 15 October 2026
+
+Team Siskamling. Current submission status and verified evidence supersede the earlier prototype notes above; see SUBMISSION.md, LIVE_SMOKE.json and ../Siskamling_Report.pdf. Docker CI passes; broad model/audio/sovereign-hosting claims remain unverified.
